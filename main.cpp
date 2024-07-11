@@ -150,6 +150,23 @@ void randomPattern(Dot dot[10][10], sf::RenderWindow& window) {
     }
 }
 
+
+void snake(Dot dot[10][10], sf::RenderWindow& window) {
+    int r = rand() % 255;
+    int g = rand() % 255;
+    int b = rand() % 255;
+    sf::Color color(r, g, b);
+    for (int i = 0; i < 10; i++) {
+        for (int j = (i % 2 == 0) ? 0 : 9; (i % 2 == 0) ? j < 10 : j >= 0; (i % 2 == 0) ? j++ : j--) {
+            dot[i][j].setColor(color);
+            drawCircles(dot, window);
+            window.display();
+            sf::sleep(sf::milliseconds(100));
+        }
+    }
+}
+
+
 int main() {
     sf::ContextSettings settings;
     settings.antialiasingLevel = 1;
@@ -160,6 +177,7 @@ int main() {
 
     ButtonBox waveButton(12);
     ButtonBox randomButton(77);
+    ButtonBox snakeButton(142);
 
     while (window.isOpen()) {
         sf::Event event;
@@ -174,13 +192,21 @@ int main() {
         drawCircles(dot, window);
 
         randomButton.draw(window);
+        snakeButton.draw(window);
+        waveButton.draw(window);
+
         if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
             if (randomButton.isClicked(window)) {
                 randomPattern(dot, window);
             }
         }
 
-        waveButton.draw(window);
+        if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+            if (snakeButton.isClicked(window)) {
+                snake(dot, window);
+            }
+        }
+
         if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
             if (waveButton.isClicked(window)) {
                 wavePattern(dot, window, 5);
