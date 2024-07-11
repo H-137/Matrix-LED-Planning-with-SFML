@@ -1,3 +1,10 @@
+/* 
+ * LED Matrix Simulator
+ * Author: Matthew Leopold - leopolmb@bc.edu
+ * C++ program to simulate an LED matrix I am planning to build later with aurdiuno
+*/
+
+
 #include <iostream>
 #include <stdlib.h> 
 #include <SFML/Graphics.hpp>
@@ -53,11 +60,11 @@ class Dot {
         sf::CircleShape dot;
 };
 
-class WaveButton {
+class ButtonBox {
     public:
-        WaveButton() {
+        ButtonBox(int x) {
             button.setSize(sf::Vector2f(50, 50));
-            button.setPosition(12, 512);
+            button.setPosition(x, 512);
             button.setFillColor(sf::Color(100, 200,200));
             button.setOutlineColor(sf::Color(255,255,255));
             button.setOutlineThickness(2);
@@ -92,6 +99,10 @@ void drawCircles(Dot dot[10][10], sf::RenderWindow& window) {
     }
 }
 
+/*
+ * Wave Pattern going from top left to bottom right
+ * KNOWN ISSUES: Unable to add other effeccts while wave is running
+*/
 void wavePattern(Dot dot[10][10], sf::RenderWindow& window, int speed) {
     sf::Clock clock;
     int r = rand() % 255;
@@ -100,17 +111,16 @@ void wavePattern(Dot dot[10][10], sf::RenderWindow& window, int speed) {
     sf::Color color(r, g, b);
 
     int row = 1;
-    bool result = false;
-    while (result == false) {
+    int done = 0;
+    while (done < 100) {
         clock.restart();
         while (clock.getElapsedTime().asMilliseconds() < speed * 20) {
+            done = 0;
             for (int i = 0; i < row; i++) {
                 for (int j = i; j >= 0; j--) {
                     if (j < 10 && i-j < 10) {
-                        if (i-j == 9 && j == 9) {
-                            result = dot[i-j][j].lerpColor(color);
-                        } else {
-                            dot[i-j][j].lerpColor(color);
+                        if (dot[j][i-j].lerpColor(color)) {
+                            done++;
                         }
                     }
                 }
@@ -125,6 +135,21 @@ void wavePattern(Dot dot[10][10], sf::RenderWindow& window, int speed) {
     }
 }
 
+/*
+ * Random Pattern changing all colors individually
+*/
+void randomPattern(Dot dot[10][10], sf::RenderWindow& window) {
+    for (int i = 0; i < 10; i++) {
+        for (int j = 0; j < 10; j++) {
+            int r = rand() % 255;
+            int g = rand() % 255;
+            int b = rand() % 255;
+            sf::Color color(r, g, b);
+            dot[i][j].setColor(color);
+        }
+    }
+}
+
 int main() {
     sf::ContextSettings settings;
     settings.antialiasingLevel = 1;
@@ -133,7 +158,8 @@ int main() {
     Dot dot[10][10];
     setPositions(dot);
 
-    WaveButton waveButton;
+    ButtonBox waveButton(12);
+    ButtonBox randomButton(77);
 
     while (window.isOpen()) {
         sf::Event event;
@@ -147,11 +173,17 @@ int main() {
 
         drawCircles(dot, window);
 
-        waveButton.draw(window);
+        randomButton.draw(window);
+        if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+            if (randomButton.isClicked(window)) {
+                randomPattern(dot, window);
+            }
+        }
 
+        waveButton.draw(window);
         if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
             if (waveButton.isClicked(window)) {
-                wavePattern(dot, window, 10);
+                wavePattern(dot, window, 5);
             }
         }
 
